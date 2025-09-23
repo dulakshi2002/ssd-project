@@ -37,7 +37,11 @@ export const signin = async (req, res, next) => {
     const expiryDate = new Date(Date.now() + 86400000); // 1 hour
 
     res
-      .cookie('access_token', token, { httpOnly: true, expires: expiryDate })
+      .cookie('access_token', token, { 
+          httpOnly: true, 
+          secure: process.env.NODE_ENV === 'production', // only HTTPS in production
+          sameSite: 'Lax', // prevent CSRF 
+          expires: expiryDate })
       .status(200)
       .json({ 
         ...rest, 
@@ -61,6 +65,8 @@ export const google = async (req, res, next) => {
       res
         .cookie('access_token', token, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Lax',
           expires: expiryDate,
         })
         .status(200)
@@ -85,6 +91,8 @@ export const google = async (req, res, next) => {
       res
         .cookie('access_token', token, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Lax',
           expires: expiryDate,
         })
         .status(200)
