@@ -44,8 +44,9 @@ export const signin = async (req, res, next) => {
       .cookie('access_token', token, { 
           httpOnly: true, 
           secure: process.env.NODE_ENV === 'production', // only HTTPS in production
-          sameSite: 'Lax', // prevent CSRF
-          maxAge: 60 * 60 * 1000 // 1 hour
+          sameSite: 'Strict', 
+          maxAge: 60 * 60 * 1000, // 1 hour
+          overwrite: true 
       })
       .status(200)
       .json({ 
@@ -72,8 +73,9 @@ export const google = async (req, res, next) => {
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Lax',
+          sameSite: 'Strict',
           maxAge: 60 * 60 * 1000,
+          overwrite: true
         })
         .status(200)
         .json(rest);
@@ -99,8 +101,9 @@ export const google = async (req, res, next) => {
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Lax',
+          sameSite: 'Strict',
           maxAge: 60 * 60 * 1000,
+          overwrite: true
         })
         .status(200)
         .json(rest);
