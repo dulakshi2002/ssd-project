@@ -30,18 +30,23 @@ export const signin = async (req, res, next) => {
     // ✅ Include role in JWT
     const token = jwt.sign(
       { id: validUser._id, isAdmin: validUser.isAdmin, role: userRole }, 
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" } // force expiry
     );
 
     const { password: hashedPassword, ...rest } = validUser._doc;
     const expiryDate = new Date(Date.now() + 86400000); // 1 hour
 
+    // clear any old cookie before setting new
+    res.clearCookie("access_token");
+
     res
       .cookie('access_token', token, { 
           httpOnly: true, 
           secure: process.env.NODE_ENV === 'production', // only HTTPS in production
-          sameSite: 'Lax', // prevent CSRF 
-          expires: expiryDate })
+          sameSite: 'Lax', // prevent CSRF
+          maxAge: 60 * 60 * 1000 // 1 hour
+      })
       .status(200)
       .json({ 
         ...rest, 
@@ -62,12 +67,13 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       const { password: hashedPassword, ...rest } = user._doc;
       const expiryDate = new Date(Date.now() + 86400000); // 1 hour
+      res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Lax',
-          expires: expiryDate,
+          maxAge: 60 * 60 * 1000,
         })
         .status(200)
         .json(rest);
@@ -88,12 +94,13 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
       const { password: hashedPassword2, ...rest } = newUser._doc;
       const expiryDate = new Date(Date.now() + 86400000); // 1 hour
+      res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Lax',
-          expires: expiryDate,
+          maxAge: 60 * 60 * 1000,
         })
         .status(200)
         .json(rest);
