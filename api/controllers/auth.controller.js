@@ -35,9 +35,9 @@ export const signin = async (req, res, next) => {
     );
 
     const { password: hashedPassword, ...rest } = validUser._doc;
-    const expiryDate = new Date(Date.now() + 86400000); // 1 hour
 
     // clear any old cookie before setting new
+    res.setHeader("Cache-Control", "no-store");   // prevents reuse of response
     res.clearCookie("access_token");
 
     res
@@ -64,9 +64,9 @@ export const google = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); // expiry added
       const { password: hashedPassword, ...rest } = user._doc;
-      const expiryDate = new Date(Date.now() + 86400000); // 1 hour
+      res.setHeader("Cache-Control", "no-store"); //  prevent fixation
       res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
@@ -91,9 +91,9 @@ export const google = async (req, res, next) => {
         profilePicture: req.body.photo,
       });
       await newUser.save();
-      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); // expiry added
       const { password: hashedPassword2, ...rest } = newUser._doc;
-      const expiryDate = new Date(Date.now() + 86400000); // 1 hour
+      res.setHeader("Cache-Control", "no-store"); // prevent fixation
       res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
