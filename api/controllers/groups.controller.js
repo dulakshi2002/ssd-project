@@ -1,6 +1,8 @@
 import StudentGroup from "../models/groups.model.js";
 import Student from "../models/student.model.js";
 import mongoose from "mongoose";
+import util from "util";
+import sanitize from "mongo-sanitize";
 
 // Generate unique group ID (GR1001, GR1002...)
 const generateGroupId = async () => {
@@ -77,7 +79,7 @@ export const addStudentGroup = async (req, res) => {
       const group = await StudentGroup.findById(id).populate("students", "student_id name");
   
       if (!group) {
-        console.log("No group found with ID:", id);
+        console.log("Received group data:", util.inspect(sanitize(req.body), { depth: 2 }));
         return res.status(404).json({ message: "Student group not found" });
       }
   
@@ -110,7 +112,7 @@ export const addStudentGroup = async (req, res) => {
       // Find the group
       const group = await StudentGroup.findById(id);
       if (!group) {
-        console.log("No group found with ID:", id);
+        console.log("Received group data:", util.inspect(sanitize(req.body), { depth: 2 }));
         return res.status(404).json({ message: "Student group not found" });
       }
   
@@ -158,7 +160,7 @@ export const addStudentGroup = async (req, res) => {
   
       const deletedGroup = await StudentGroup.findByIdAndDelete(id);
       if (!deletedGroup) {
-        console.log("No group found with ID:", id);
+        console.log("Received group data:", util.inspect(sanitize(req.body), { depth: 2 }));
         return res.status(404).json({ message: "Student group not found" });
       }
   

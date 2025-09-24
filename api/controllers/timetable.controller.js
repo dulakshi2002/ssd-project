@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import Student from "../models/student.model.js";
 import sanitize from "mongo-sanitize";
 import Joi from "joi";
+import util from "util";
 
 // Helper
 const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -42,8 +43,7 @@ export const addTimetable = async (req, res) => {
     }
     const { group_id, schedule } = value;
 
-
-    console.log("Received Request Body:", req.body); // Debugging: Log request data
+    console.log("Received Request Body:", util.inspect(sanitize(req.body), { depth: 2 }));
 
     // Validate Group ID
     const groupExists = await StudentGroup.findOne({ group_id });
