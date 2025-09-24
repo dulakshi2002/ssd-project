@@ -45,13 +45,20 @@ export const signin = async (req, res, next) => {
       });
     }
 
-    res.clearCookie("access_token");
+    res.clearCookie("access_token", { path: "/" });
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) console.error("Failed to destroy old session:", err);
+      });
+    }
+
 
     res
       .cookie('access_token', token, { 
           httpOnly: true, 
           secure: process.env.NODE_ENV === 'production', // only HTTPS in production
           sameSite: 'Strict', 
+          path: "/",
           maxAge: 60 * 60 * 1000, // 1 hour
           overwrite: true,
           signed: true 
@@ -81,12 +88,19 @@ export const google = async (req, res, next) => {
         if (err) console.error("Session regeneration failed:", err);
       });
       }
-      res.clearCookie("access_token");
+      res.clearCookie("access_token", { path: "/" });
+      if (req.session) {
+        req.session.destroy(err => {
+          if (err) console.error("Failed to destroy old session:", err);
+        });
+      }
+
       res
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
+          path: "/",
           maxAge: 60 * 60 * 1000,
           overwrite: true,
           signed: true
@@ -115,12 +129,19 @@ export const google = async (req, res, next) => {
         if (err) console.error("Session regeneration failed:", err);
       });
       }
-      res.clearCookie("access_token");
+      res.clearCookie("access_token", { path: "/" });
+      if (req.session) {
+        req.session.destroy(err => {
+          if (err) console.error("Failed to destroy old session:", err);
+        });
+      }
+
       res
         .cookie('access_token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
+          path: "/",
           maxAge: 60 * 60 * 1000,
           overwrite: true,
           signed: true
