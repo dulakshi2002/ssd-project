@@ -5,10 +5,43 @@ import Examiner from "../models/examiner.model.js"; // Lecturer is from Examiner
 import Venue from "../models/venue.model.js";
 import mongoose from "mongoose";
 import Student from "../models/student.model.js";
+import sanitize from "mongo-sanitize";
+import Joi from "joi";
+
+// Helper
+const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Joi schema for each lecture
+const lectureSchema = Joi.object({
+  module_code: Joi.string().alphanum().min(3).max(10).required(),
+  lecturer_id: Joi.string().alphanum().min(3).max(10).required(),
+  venue_id: Joi.string().alphanum().min(3).max(10).required(),
+  start_time: Joi.string().pattern(/^\d{2}:\d{2}$/).required(),
+  end_time: Joi.string().pattern(/^\d{2}:\d{2}$/).required(),
+});
+
+// Joi schema for weekly schedule
+const timetableSchema = Joi.object({
+  group_id: Joi.string().pattern(/^GR[0-9]{4}$/).required(),
+  schedule: Joi.array().items(
+    Joi.object({
+      day: Joi.string().valid("Monday","Tuesday","Wednesday","Thursday","Friday").required(),
+      lectures: Joi.array().items(lectureSchema).required(),
+    })
+  ).required()
+});
+
+
 //  Add a new timetable (Full week schedule)
 export const addTimetable = async (req, res) => {
   try {
-    const { group_id, schedule } = req.body;
+    const cleanBody = sanitize(req.body);
+    const { error, value } = timetableSchema.validate(cleanBody);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const { group_id, schedule } = value;
+
 
     console.log("Received Request Body:", req.body); // Debugging: Log request data
 
@@ -148,7 +181,11 @@ export const viewAllTimetables = async (req, res) => {
 // View timetable by Group ID
 export const viewTimetableByGroupId = async (req, res) => {
   try {
-    const { group_id } = req.params;
+    const { group_id } = sanitize(req.params);
+    if (!/^GR[0-9]{4}$/.test(group_id)) {
+      return res.status(400).json({ message: "Invalid Group ID format" });
+    }
+
     const timetable = await Timetable.findOne({ group_id });
 
     if (!timetable) {
@@ -165,7 +202,16 @@ export const viewTimetableByGroupId = async (req, res) => {
 export const updateTimetable = async (req, res) => {
   try {
     const { id } = req.params;
-    const { group_id, schedule } = req.body;
+    if (!isObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid timetable ID" });
+    }
+
+    const cleanBody = sanitize(req.body);
+    const { error, value } = timetableSchema.validate(cleanBody);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const { group_id, schedule } = value;
 
     // Validate Group ID
     const groupExists = await StudentGroup.findOne({ group_id });
@@ -252,6 +298,10 @@ export const updateTimetable = async (req, res) => {
 export const deleteTimetable = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid timetable ID" });
+    }
+
     const deletedTimetable = await Timetable.findByIdAndDelete(id);
 
     if (!deletedTimetable) {
@@ -266,7 +316,10 @@ export const deleteTimetable = async (req, res) => {
 
 export const getTimetableForStudent = async (req, res) => {
   try {
-      const { studentId } = req.params; // studentId is a string like "ST2025001"
+      const { studentId } = sanitize(req.params);
+      if (!/^ST[0-9]{7}$/.test(studentId)) {
+        return res.status(400).json({ message: "Invalid Student ID format" });
+      }
 
       // Convert studentId to ObjectId if students are stored as ObjectId in StudentGroup
       const student = await Student.findOne({ student_id: studentId });
@@ -300,7 +353,11 @@ export const getTimetableForStudent = async (req, res) => {
   
 export const getTimetableForExaminer = async (req, res) => {
     try {
-        const { examinerId } = req.params;
+        const { examinerId } = sanitize(req.params);
+        if (!/^EX[0-9]{7}$/.test(examinerId)) {
+          return res.status(400).json({ message: "Invalid Examiner ID format" });
+        }
+
 
         if (!examinerId) {
             return res.status(400).json({ message: "Examiner ID is required in the request parameters." });
@@ -334,7 +391,11 @@ export const getTimetableForExaminer = async (req, res) => {
   
 export const getTimetableForVenue = async (req, res) => {
     try {
-        const { venueId } = req.params;
+        const { venueId } = sanitize(req.params);
+        if (!/^VN[0-9]{4}$/.test(venueId)) {
+          return res.status(400).json({ message: "Invalid Venue ID format" });
+        }
+
     
         // Find all timetables that include this venue in any day's lectures
         const timetables = await Timetable.find({
@@ -436,7 +497,10 @@ export const getFreeTimesForLecturer = async (req, res) => {
 export const getTimetableById = async (req, res) => {
       try {
         const { id } = req.params;
-        
+        if (!isObjectId(req.params.id)) {
+          return res.status(400).json({ message: "Invalid timetable ID" });
+        }
+
         const timetable = await Timetable.findById(id);
         
         if (!timetable) {

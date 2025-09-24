@@ -14,9 +14,9 @@ export const addStudentGroup = async (req, res) => {
   try {
     const { department, students } = req.body;
 
-    if (!department || !students || students.length === 0) {
-      return res.status(400).json({ message: "Department and students are required" });
-    }
+    if (!department || !students || !Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({ message: "Invalid request: department and valid student list are required" });
+    } 
 
     // Convert student_id to ObjectId
     const studentDocs = await Student.find({ student_id: { $in: students } });
@@ -97,6 +97,15 @@ export const addStudentGroup = async (req, res) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: "Invalid Group ID" });
       }
+
+      if (department && typeof department !== "string") {
+        return res.status(400).json({ message: "Invalid department format" });
+      }
+
+      if (students && (!Array.isArray(students) || students.length === 0)) {
+        return res.status(400).json({ message: "Invalid students list" });
+      }
+
   
       // Find the group
       const group = await StudentGroup.findById(id);
