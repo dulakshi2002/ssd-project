@@ -26,7 +26,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());  // Parses incoming requests with JSON payloads
-app.use(cookieParser());   // Parse cookies in incoming requests
+app.use(cookieParser(process.env.COOKIE_SECRET));   // Parse cookies in incoming requests
 
 // Configure CORS
 app.use(cors({

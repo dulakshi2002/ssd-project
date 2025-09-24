@@ -38,6 +38,13 @@ export const signin = async (req, res, next) => {
 
     // clear any old cookie before setting new
     res.setHeader("Cache-Control", "no-store");   // prevents reuse of response
+    
+    if (req.session) {
+      req.session.regenerate(err => {
+        if (err) console.error("Session regeneration failed:", err);
+      });
+    }
+
     res.clearCookie("access_token");
 
     res
@@ -46,7 +53,8 @@ export const signin = async (req, res, next) => {
           secure: process.env.NODE_ENV === 'production', // only HTTPS in production
           sameSite: 'Strict', 
           maxAge: 60 * 60 * 1000, // 1 hour
-          overwrite: true 
+          overwrite: true,
+          signed: true 
       })
       .status(200)
       .json({ 
@@ -68,6 +76,11 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); // expiry added
       const { password: hashedPassword, ...rest } = user._doc;
       res.setHeader("Cache-Control", "no-store"); //  prevent fixation
+      if (req.session) {
+      req.session.regenerate(err => {
+        if (err) console.error("Session regeneration failed:", err);
+      });
+      }
       res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
@@ -75,7 +88,8 @@ export const google = async (req, res, next) => {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
           maxAge: 60 * 60 * 1000,
-          overwrite: true
+          overwrite: true,
+          signed: true
         })
         .status(200)
         .json(rest);
@@ -96,6 +110,11 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); // expiry added
       const { password: hashedPassword2, ...rest } = newUser._doc;
       res.setHeader("Cache-Control", "no-store"); // prevent fixation
+      if (req.session) {
+      req.session.regenerate(err => {
+        if (err) console.error("Session regeneration failed:", err);
+      });
+      }
       res.clearCookie("access_token");
       res
         .cookie('access_token', token, {
@@ -103,7 +122,8 @@ export const google = async (req, res, next) => {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'Strict',
           maxAge: 60 * 60 * 1000,
-          overwrite: true
+          overwrite: true,
+          signed: true
         })
         .status(200)
         .json(rest);
