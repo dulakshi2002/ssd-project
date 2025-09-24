@@ -191,7 +191,7 @@ Please be prepared accordingly.`
         const fakeRes = { status: () => ({ json: () => {} }) };
         await rescheduleLectures(fakeReq, fakeRes);
       } catch (err) {
-        console.error(`Error while rescheduling lectures for Examiner ${examinerObjectId}:`, err);
+        console.log("Reschedule response for Examiner:", examiner.examiner_id, response);
       }
     }
 
@@ -415,7 +415,7 @@ Please take note of these changes.`
           const fakeRes = { status: () => ({ json: () => {} }) };
           await rescheduleLectures(fakeReq, fakeRes);
         } catch (err) {
-          console.error(`Error while rescheduling lectures for Examiner ${exId}:`, err);
+          console.log("Reschedule response for Examiner:", examiner.examiner_id, response);
         }
       }
     }
@@ -1069,7 +1069,7 @@ Please be prepared accordingly.`
       try {
         await rescheduleLectures(fakeReq, fakeRes);
       } catch (err) {
-        console.error(`Error rescheduling lectures for Examiner ${exDoc.examiner_id}:`, err);
+        console.log("Reschedule response for Examiner:", exDoc.examiner_id, response);
       }
     }
 
